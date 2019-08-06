@@ -30,4 +30,17 @@ router.get('/comments/:commentId', (req, res) => {
         .catch(error => res.status(500).json({ error: "Server error when searching for comment with this ID." }));
 });
 
+router.post('/:postId/comments', (req, res) => {
+    const comment = req.body;
+    console.log(comment);
+
+    if(comment.text && comment.post_id) {
+        data.insertComment(comment)
+            .then(comment => res.status(201).json({ message: "Successfully posted!" }))
+            .catch(error => res.status(404).json({ error: "The post with the specified ID does not exist." }));
+    } else {
+        res.status(400).json({ error: "Please provide some text and a post ID." })
+    }
+})
+
 module.exports = router;

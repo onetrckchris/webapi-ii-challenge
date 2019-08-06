@@ -13,8 +13,6 @@ router.get('/:id', (req, res) => {
 
     data.findById(id)
         .then(post => {
-            // How come just checking if the post exists 
-            // worked in users-api but not here?
             if(post.length !== 0) {
                 res.status(200).json(post);
             } else {
@@ -26,14 +24,48 @@ router.get('/:id', (req, res) => {
 
 router.post('/', (req, res) => {
     const post = req.body;
+    console.log(req.body);
 
     if(post.title && post.contents) {
         data.insert(post)
         .then(() => res.status(201).json({ message: "Successfully posted!" }))
-        .catch(error => res.status(400).json({ error: "Please provide title and content for the blog post." }));
+        .catch(error => res.status(500).json({ error: "There was an error while saving the post to the database"  }));
     } else {
-        res.status(500).json({ error: "Server error when posting." });
+        res.status(400).json({ error: "Please provide title and contents for the post."  });
     }
 });
+
+router.delete('/:id', (req, res) => {
+    const id = req.params.id;
+
+    data.remove(id)
+        .then(post => {
+            if(post) {
+                res.status(204).json(post);
+            } else {
+                res.status(404).json({ error: "The post with the specified ID does not exist." });
+            }
+        })
+        .catch(error => status(500).json({ error: "The post could not be removed" }));
+});
+
+router.put('/:id', (req, res) => {
+    const id = req.params.id;
+    const changes = req.body;
+
+    if(changes.title && changes.contents) {
+        data.update(id, changes)
+            .then(updated => {
+                if(updated) {
+                    res.status(202).json(changes);
+                } else {
+                    res.status(404).json({ error: "The post with the specified ID does not exist." });
+                }
+            })
+            .catch(error => res.status(500).json({ error: "The post information could not be modified." }));
+    } else {
+        res.status(400).json({ error: "Please provide title and contents for the post."  })
+    }
+})
 
 module.exports = router;
